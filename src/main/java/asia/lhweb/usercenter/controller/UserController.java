@@ -52,7 +52,7 @@ public class UserController {
         System.out.println();
         return userService.userLogin(userAccount, userPassword,request);
     }
-    @GetMapping("/getCurrent")
+    @GetMapping("/current")
     public User getCurrentUser(HttpServletRequest request){
         User currentUser= (User) request.getSession().getAttribute(USER_LOGIN_STATE);
         //如果没有登录过
