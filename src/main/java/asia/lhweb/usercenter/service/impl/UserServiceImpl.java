@@ -41,14 +41,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @param userAccount   用户帐户
      * @param userPassword  用户密码
      * @param checkPassword 检查密码
+     * @param plantCode
      * @return long
      */
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword, String plantCode) {
         // 1 校验 import org.apache.commons.lang3.StringUtils;
-        if (StringUtils.isAllBlank(userAccount, userPassword, checkPassword)) return -1;
+        //todo  自定义异常
+        if (StringUtils.isAllBlank(userAccount, userPassword, checkPassword,plantCode)) return -1;
         if (userAccount.length() < 4) return -1;
         if (userPassword.length() < 8 || checkPassword.length() < 8) return -1;
+        if (plantCode.length() > 6 ) return -1;
         // 账户不能包含特殊字符
         String validRule = "^[a-zA-Z0-9]+$";
         Matcher matcher = Pattern.compile(validRule).matcher(userAccount);
@@ -58,12 +61,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
 
-        // 密码和校验密码相同
+        // 验证密码和校验密码是否相同
         if (!userPassword.equals(checkPassword)) return -1;
         // 账户不能重复
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("userAccount", userAccount);
         long count = userMapper.selectCount(userQueryWrapper);
+        if (count > 0) return -1;
+
+        //星球编号不能重复
+        userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("plantCode", plantCode);
+        count = userMapper.selectCount(userQueryWrapper);
         if (count > 0) return -1;
 
         // 2 加密 import org.springframework.util.DigestUtils;
@@ -73,6 +82,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
+        user.setPlantCode(plantCode);
         boolean saveResult = this.save(user);
         if (!saveResult) {
             return -1;
@@ -148,6 +158,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         cleanUser.setPhone(user.getPhone());
         cleanUser.setCreateTime(user.getCreateTime());
         cleanUser.setUpdateTime(user.getUpdateTime());
+        cleanUser.setPlantCode(user.getPlantCode());
         return cleanUser;
     }
 
@@ -179,6 +190,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean deleteUsers(long id) {
         //逻辑删除
         return this.removeById(id);
+    }
+
+    /**
+     * 用户注销
+     *
+     * @param request 请求
+     * @return int
+     */
+    @Override
+    public int userLogout(HttpServletRequest request) {
+        //移除登录
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return 1;
     }
 }
 

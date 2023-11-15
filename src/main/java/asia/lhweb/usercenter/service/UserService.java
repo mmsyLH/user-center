@@ -14,14 +14,17 @@ import java.util.List;
 public interface UserService extends IService<User> {
 
     /**
+     * 用户注册
      * ⽤户注释
-     * @param userAccount ⽤户账户
-     * @param userPassword ⽤户密码
+     *
+     * @param userAccount   ⽤户账户
+     * @param userPassword  ⽤户密码
      * @param checkPassword 校验密码
+     * @param plantCode     星球编号
      * @return 新⽤户 id
      */
 
-    long userRegister(String userAccount, String userPassword, String checkPassword);
+    long userRegister(String userAccount, String userPassword, String checkPassword, String plantCode);
 
     /**
      * 用户登录
@@ -56,4 +59,12 @@ public interface UserService extends IService<User> {
      * @return boolean
      */
     boolean deleteUsers(long id);
+
+    /**
+     * 用户注销
+     *
+     * @param request 请求
+     * @return int
+     */
+    int userLogout(HttpServletRequest request);
 }

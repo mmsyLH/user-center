@@ -11,6 +11,15 @@ public class UserRegisterRequest implements Serializable {
     private String userAccount;
     private String checkPassword;
     private String userPassword;
+    private String plantCode;
+
+    public String getPlantCode() {
+        return plantCode;
+    }
+
+    public void setPlantCode(String plantCode) {
+        this.plantCode = plantCode;
+    }
 
     public String getUserAccount() {
         return userAccount;

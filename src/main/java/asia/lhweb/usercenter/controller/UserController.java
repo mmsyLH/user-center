@@ -4,7 +4,6 @@ import asia.lhweb.usercenter.model.domain.User;
 import asia.lhweb.usercenter.model.request.UserLoginRequest;
 import asia.lhweb.usercenter.model.request.UserRegisterRequest;
 import asia.lhweb.usercenter.service.UserService;
-import asia.lhweb.usercenter.service.impl.UserServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -36,12 +35,18 @@ public class UserController {
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        if (StringUtils.isAllBlank(userAccount, userPassword, checkPassword)) return null;
-        return userService.userRegister(userAccount, userPassword, checkPassword);
+        String plantCode = userRegisterRequest.getPlantCode();
+        if (StringUtils.isAllBlank(userAccount, userPassword, checkPassword,plantCode)) return null;
+        return userService.userRegister(userAccount, userPassword, checkPassword,plantCode);
     }
 
+    @PostMapping("/logout")
+    public Integer userLogout(HttpServletRequest request) {
+        if (request==null) return null;
+        return userService.userLogout(request);
+    }
     @PostMapping("/login")
-    public User UserLogin(@RequestBody UserLoginRequest userRegisterRequest, HttpServletRequest request) {
+    public User userLogin(@RequestBody UserLoginRequest userRegisterRequest, HttpServletRequest request) {
         if (userRegisterRequest == null) return null;
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();

@@ -1,10 +1,10 @@
 package asia.lhweb.usercenter.model.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 用户表
@@ -70,15 +70,20 @@ public class User implements Serializable {
     private Date updateTime;
 
     /**
+     * 是否删除
+     */
+    @TableLogic
+    private Integer isDelete;
+
+    /**
      * 用户权限 默认为0  表示普通用户 1 管理员
      */
     private Integer userRole;
 
     /**
-     * 是否删除
+     * 星球编号
      */
-    @TableLogic
-    private Integer isDelete;
+    private String plantCode;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

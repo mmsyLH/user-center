@@ -59,37 +59,37 @@ class UserServiceTest {
     @Test
     void userRegister() {
         String userAccount = "luohan";
-        String userPassword = "";
+        String userPassword = "12345678";
         String checkPassword = "123456";
+        String plantCode="1";
         //效验密码不能为空
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        long result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertEquals(-1, result);
         //
         userAccount = "lh";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertEquals(-1, result);
         //密码小于8位
         userAccount = "luohan";
         userPassword = "123456";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertEquals(-1, result);
         userAccount = "luohan";
         userPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertEquals(-1, result);
         checkPassword = "123456789";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertEquals(-1, result);
         userAccount = "123";
         userPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertEquals(-1, result);
         userAccount = "luohan";
 
-
+        userAccount="luohan3";
         checkPassword="12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword);
+        result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertTrue(result > 0);
-
     }
 }
