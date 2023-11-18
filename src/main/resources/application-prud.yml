@@ -7,3 +7,5 @@ spring:
     password: root
   session:
       timeout: 86400
+service:
+  address: 0.0.0.0
