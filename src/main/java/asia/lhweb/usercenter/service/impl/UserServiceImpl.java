@@ -1,5 +1,7 @@
 package asia.lhweb.usercenter.service.impl;
 
+import asia.lhweb.usercenter.common.ErrorCode;
+import asia.lhweb.usercenter.exception.BusinessException;
 import asia.lhweb.usercenter.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -49,31 +51,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 1 校验 import org.apache.commons.lang3.StringUtils;
         //todo  自定义异常
         if (StringUtils.isAllBlank(userAccount, userPassword, checkPassword,plantCode)) return -1;
-        if (userAccount.length() < 4) return -1;
-        if (userPassword.length() < 8 || checkPassword.length() < 8) return -1;
-        if (plantCode.length() > 6 ) return -1;
+        if (userAccount.length() < 4){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账户长度不能小于4");
+        }
+        if (userPassword.length() < 8 || checkPassword.length() < 8){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码长度不能小于8");
+        }
+        if (plantCode.length() > 6 ){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"星球编号长度不能大于6");
+        }
         // 账户不能包含特殊字符
         String validRule = "^[a-zA-Z0-9]+$";
         Matcher matcher = Pattern.compile(validRule).matcher(userAccount);
         // 如果包含非法字符，则返回
         if (!matcher.matches()) {
-            return -1L;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账户包含非法字符");
         }
 
-
         // 验证密码和校验密码是否相同
-        if (!userPassword.equals(checkPassword)) return -1;
+        if (!userPassword.equals(checkPassword)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码和校验密码不相同");
+        }
         // 账户不能重复
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("userAccount", userAccount);
         long count = userMapper.selectCount(userQueryWrapper);
-        if (count > 0) return -1;
+        if (count > 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账户不能重复");
+        }
 
         //星球编号不能重复
         userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("plantCode", plantCode);
         count = userMapper.selectCount(userQueryWrapper);
-        if (count > 0) return -1;
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"星球编号不能重复");
+        }
 
         // 2 加密 import org.springframework.util.DigestUtils;
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -85,7 +98,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPlantCode(plantCode);
         boolean saveResult = this.save(user);
         if (!saveResult) {
-            return -1;
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"请联系管理员");
         }
         return user.getId();
 
@@ -101,15 +114,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1 校验 import org.apache.commons.lang3.StringUtils;
-        if (StringUtils.isAllBlank(userAccount, userPassword)) return null;
-        if (userAccount.length() < 4) return null;
-        if (userPassword.length() < 8) return null;
+        if (StringUtils.isAllBlank(userAccount, userPassword)){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"用户或者密码为空");
+        }
+        if (userAccount.length() < 4) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号长度不能小于4位");
+        }
+        if (userPassword.length() < 8){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码长度不能小于8");
+        }
         // 账户不能包含特殊字符
         String validRule = "^[a-zA-Z\\d]+$";
         Matcher matcher = Pattern.compile(validRule).matcher(userAccount);
         // 如果包含非法字符，则返回
         if (!matcher.matches()) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号不能包含非法字符");
         }
 
 
@@ -125,7 +144,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //用户不存在
         if (user==null) {
             log.info("user does not  or userAccount and userPassword is error");
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR,"user does not  or userAccount and userPassword is error ");
         }
         //3 脱敏
         User cleanUser = getSafetyUser(user);

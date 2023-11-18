@@ -1,0 +1,9 @@
+spring:
+    # DataSource Config
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://175.178.68.11:3306/luohan
+    username: root
+    password: root
+  session:
+      timeout: 86400
