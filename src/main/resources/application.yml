@@ -1,19 +1,19 @@
 spring:
   application:
-    name: user-center
-    # DataSource Config
+    name: lh-backend
+  # DataSource Config
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/yupi
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/find_friend
     username: root
     password: root
+  # session 失效时间
   session:
-      timeout: 86400
+    timeout: 86400
 server:
   port: 8080
   servlet:
     context-path: /api
-
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false

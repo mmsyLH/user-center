@@ -7,32 +7,29 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 用户表
- * @TableName user
+ * 用户实体
+ *
+ * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
+ * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
-@TableName(value ="user")
+@TableName(value = "user")
 @Data
 public class User implements Serializable {
     /**
-     * 
+     * id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 用户名称
+     * 用户昵称
      */
     private String username;
 
     /**
-     * 注册账号
+     * 账号
      */
     private String userAccount;
-
-    /**
-     * 性别
-     */
-    private Integer gender;
 
     /**
      * 用户头像
@@ -40,19 +37,14 @@ public class User implements Serializable {
     private String avatarUrl;
 
     /**
+     * 性别
+     */
+    private Integer gender;
+
+    /**
      * 密码
      */
     private String userPassword;
-
-    /**
-     * 邮箱
-     */
-    private String email;
-
-    /**
-     * 0表示状态正常
-     */
-    private Integer userStatus;
 
     /**
      * 电话
@@ -60,12 +52,22 @@ public class User implements Serializable {
     private String phone;
 
     /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
+     * 状态 0 - 正常
+     */
+    private Integer userStatus;
+
+    /**
      * 创建时间
      */
     private Date createTime;
 
     /**
-     * 更新时间
+     *
      */
     private Date updateTime;
 
@@ -76,14 +78,17 @@ public class User implements Serializable {
     private Integer isDelete;
 
     /**
-     * 用户权限 默认为0  表示普通用户 1 管理员
+     * 用户角色 0 - 普通用户 1 - 管理员
      */
     private Integer userRole;
 
     /**
      * 星球编号
      */
-    private String plantCode;
+    private String planetCode;
+    private String tags;
+
+    // https://github.com/liyupi
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

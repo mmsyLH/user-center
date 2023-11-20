@@ -1,7 +1,10 @@
 package asia.lhweb.usercenter.service;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import asia.lhweb.usercenter.model.domain.User;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,5 +94,11 @@ class UserServiceTest {
         checkPassword="12345678";
         result = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         Assertions.assertTrue(result > 0);
+    }
+    @Test
+    void testSearchUsersByTags() {
+        List<String> tagNameList = Arrays.asList("java", "python");
+        List<User> userList = userService.searchUsersByTags(tagNameList);
+        Assert.assertNotNull(userList) ;
     }
 }

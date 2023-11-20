@@ -7,14 +7,20 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import asia.lhweb.usercenter.model.domain.User;
 import asia.lhweb.usercenter.mapper.UserMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -95,7 +101,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
-        user.setPlantCode(plantCode);
+        user.setPlanetCode(plantCode);
         boolean saveResult = this.save(user);
         if (!saveResult) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"请联系管理员");
@@ -157,28 +163,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 获得安全用户
      *
-     * @param user 用户
+     * @param originUser 起源用户
      * @return {@link User}
      */
     @Override
-    public User getSafetyUser(User user) {
-        if (user==null) return null;
-        //3 用户脱敏
-        User cleanUser = new User();
-        cleanUser.setId(user.getId());
-        cleanUser.setUsername(user.getUsername());
-        cleanUser.setUserAccount(user.getUserAccount());
-        cleanUser.setGender(user.getGender());
-        cleanUser.setAvatarUrl(user.getAvatarUrl());
-        cleanUser.setUserPassword("");
-        cleanUser.setEmail(user.getEmail());
-        cleanUser.setUserRole(user.getUserRole());
-        cleanUser.setUserStatus(user.getUserStatus());
-        cleanUser.setPhone(user.getPhone());
-        cleanUser.setCreateTime(user.getCreateTime());
-        cleanUser.setUpdateTime(user.getUpdateTime());
-        cleanUser.setPlantCode(user.getPlantCode());
-        return cleanUser;
+    public User getSafetyUser(User originUser) {
+        if (originUser == null) {
+            return null;
+        }
+        User safetyUser = new User();
+        safetyUser.setId(originUser.getId());
+        safetyUser.setUsername(originUser.getUsername());
+        safetyUser.setUserAccount(originUser.getUserAccount());
+        safetyUser.setAvatarUrl(originUser.getAvatarUrl());
+        safetyUser.setGender(originUser.getGender());
+        safetyUser.setPhone(originUser.getPhone());
+        safetyUser.setEmail(originUser.getEmail());
+        safetyUser.setPlanetCode(originUser.getPlanetCode());
+        safetyUser.setUserRole(originUser.getUserRole());
+        safetyUser.setUserStatus(originUser.getUserStatus());
+        safetyUser.setCreateTime(originUser.getCreateTime());
+        safetyUser.setTags(originUser.getTags());
+        return safetyUser;
     }
 
     /**
@@ -222,6 +228,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //移除登录
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return 1;
+    }
+
+    /**
+     *   根据标签搜索用户。(内存过滤版)
+     * @param tagNameList  用户要搜索的标签
+     * @return
+     */
+    @Override
+    public List<User> searchUsersByTags(List<String> tagNameList){
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //1.先查询所有用户
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        Gson gson = new Gson();
+        //2.判断内存中是否包含要求的标签 parallelStream()
+        return userList.stream().filter(user -> {
+            String tagstr = user.getTags();
+            Set<String> tempTagNameSet =  gson.fromJson(tagstr,new TypeToken<Set<String>>(){}.getType());
+            //java8  Optional 来判断空  如果为空就返回另外一个值orElse(new HashSet<>())
+            tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
+
+            for (String tagName : tagNameList){
+                if (!tempTagNameSet.contains(tagName)){
+                    return false;
+                }
+            }
+            return true;
+        }).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+
+    /**
+     *   根据标签搜索用户。(sql查询版)
+     *   @Deprecated 过时
+     * @param tagNameList  用户要搜索的标签
+     * @return
+     */
+    @Deprecated
+    public List<User> searchUsersByTagBySQL(List<String> tagNameList){
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        //拼接tag
+        // like '%Java%' and like '%Python%'
+        for (String tagList : tagNameList) {
+            queryWrapper = queryWrapper.like("tags", tagList);
+        }
+        List<User> userList = userMapper.selectList(queryWrapper);
+        return  userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
     }
 }
 
