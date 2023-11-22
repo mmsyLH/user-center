@@ -63,8 +63,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userPassword.length() < 8 || checkPassword.length() < 8){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码长度不能小于8");
         }
-        if (plantCode.length() > 6 ){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"星球编号长度不能大于6");
+        if (plantCode.length() > 15 ){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"星球编号长度不能大于15");
         }
         // 账户不能包含特殊字符
         String validRule = "^[a-zA-Z0-9]+$";
@@ -101,7 +101,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
-        user.setPlanetCode(plantCode);
+        user.setPlantCode(plantCode);
         boolean saveResult = this.save(user);
         if (!saveResult) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"请联系管理员");
@@ -179,7 +179,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         safetyUser.setGender(originUser.getGender());
         safetyUser.setPhone(originUser.getPhone());
         safetyUser.setEmail(originUser.getEmail());
-        safetyUser.setPlanetCode(originUser.getPlanetCode());
+        safetyUser.setPlantCode(originUser.getPlantCode());
         safetyUser.setUserRole(originUser.getUserRole());
         safetyUser.setUserStatus(originUser.getUserStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());

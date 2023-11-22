@@ -9,6 +9,8 @@ import asia.lhweb.usercenter.model.domain.User;
 import asia.lhweb.usercenter.model.request.UserLoginRequest;
 import asia.lhweb.usercenter.model.request.UserRegisterRequest;
 import asia.lhweb.usercenter.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +31,11 @@ import static asia.lhweb.usercenter.contant.UserConstant.*;
 @Slf4j
 @RestController// 返回类型都是json restful风格的api
 @RequestMapping("/user")
+@Api(tags = "用户相关接口")
 public class UserController {
     @Resource
     private UserService userService;
-
+    @ApiOperation("用户注册")
     @PostMapping("/register")
     public BaseResponse<Long> UserRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
@@ -49,13 +52,14 @@ public class UserController {
         long res = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
         return ResultUtils.success(res );
     }
-
+    @ApiOperation("用户退出登录")
     @PostMapping("/logout")
     public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         if (request==null) return null;
         int res = userService.userLogout(request);
         return ResultUtils.success(res,USER_LOGOUT_SUCCESS);
     }
+    @ApiOperation("用户登录")
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userRegisterRequest, HttpServletRequest request) {
         if (userRegisterRequest == null) {
@@ -77,6 +81,7 @@ public class UserController {
      * @param request 请求
      * @return {@link BaseResponse}<{@link User}>
      */
+    @ApiOperation("获取当前用户信息")
     @GetMapping("/current")
     public BaseResponse<User> getCurrentUser(HttpServletRequest request){
         User currentUser= (User) request.getSession().getAttribute(USER_LOGIN_STATE);
@@ -91,6 +96,14 @@ public class UserController {
         return ResultUtils.success(safetyUser,"获取当前用户信息成功");
     }
 
+    /**
+     * 搜索用户
+     *
+     * @param userName 用户名
+     * @param request  请求
+     * @return {@link BaseResponse}<{@link List}<{@link User}>>
+     */
+    @ApiOperation("搜索全部用户")
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String userName,HttpServletRequest request){
         //鉴权 管理员可查询
@@ -103,6 +116,14 @@ public class UserController {
         return ResultUtils.success(users,"search成功");
     }
 
+    /**
+     * 删除用户
+     *
+     * @param id      id
+     * @param request 请求
+     * @return {@link BaseResponse}<{@link Boolean}>
+     */
+    @ApiOperation("删除用户")
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUsers(@RequestBody long id, HttpServletRequest request){
         if (!isAdmin(request)){
