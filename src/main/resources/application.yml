@@ -9,9 +9,19 @@ spring:
     url: jdbc:mysql://localhost:3306/find_friend
     username: root
     password: root
+
+#    redis配置
+  redis:
+    host: localhost
+    database: 3
+    password: root
+    port: 6379
+
   # session 失效时间
   session:
     timeout: 86400
+#    默认None 表示存储在服务器
+    store-type: redis
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -20,6 +30,9 @@ server:
   port: 8080
   servlet:
     context-path: /api
+    session:
+      cookie:
+        domain:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false

@@ -150,7 +150,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //用户不存在
         if (user==null) {
             log.info("user does not  or userAccount and userPassword is error");
-            throw new BusinessException(ErrorCode.NULL_ERROR,"user does not  or userAccount and userPassword is error ");
+            throw new BusinessException(ErrorCode.NULL_ERROR,"账号或者密码错误 ");
         }
         //3 脱敏
         User cleanUser = getSafetyUser(user);
