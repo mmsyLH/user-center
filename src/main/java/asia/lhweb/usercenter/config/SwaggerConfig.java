@@ -24,7 +24,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 @Configuration // 配置类
 @EnableSwagger2 // 开启 swagger2 的自动配置
-@Profile({"dev", "test"})   //版本控制访问
+@Profile({"dev", "test"})   // 版本控制访问
 @Slf4j
 public class SwaggerConfig {
     @Bean
@@ -34,6 +34,8 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 // 配置接口信息
                 .select() // 设置扫描接口
+                // 设置前缀
+
                 // 配置如何扫描接口
                 .apis(RequestHandlerSelectors
                                 //.any() // 扫描全部的接口，默认
@@ -43,13 +45,15 @@ public class SwaggerConfig {
                         //.withMethodAnnotation(PostMapping.class) // 扫描带有只当注解的方法接口
                 )
                 .paths(PathSelectors
-                                .any() // 满足条件的路径，该断言总为true
+                .any() // 满足条件的路径，该断言总为true
                         //.none() // 不满足条件的路径，该断言总为false（可用于生成环境屏蔽 swagger）
                         //.ant("/user/**") // 满足字符串表达式路径
                         //.regex("") // 符合正则的路径
                 )
                 .build()
-                .apiInfo(apiInfo());
+                .apiInfo(apiInfo())//设置个人信息
+                .pathMapping("/api")//设置请求前缀
+                ;
     }
 
     /**

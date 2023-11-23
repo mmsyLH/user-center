@@ -13,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -136,6 +137,17 @@ public class UserController {
         return ResultUtils.success(res,"删除成功");
     }
 
+    @ApiOperation("根据标签搜索用户")
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagsNameList){
+        //效验是否为空
+        if (CollectionUtils.isEmpty(tagsNameList)){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"请求标签为空");
+        }
+        //脱敏后返回
+        List<User> users = userService.searchUsersByTags(tagsNameList);
+        return ResultUtils.success(users,"搜索用户列表成功");
+    }
     /**
      * 是否管理员
      *

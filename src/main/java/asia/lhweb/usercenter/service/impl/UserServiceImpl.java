@@ -250,7 +250,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             Set<String> tempTagNameSet =  gson.fromJson(tagstr,new TypeToken<Set<String>>(){}.getType());
             //java8  Optional 来判断空  如果为空就返回另外一个值orElse(new HashSet<>())
             tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
-
             for (String tagName : tagNameList){
                 if (!tempTagNameSet.contains(tagName)){
                     return false;
@@ -259,8 +258,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return true;
         }).map(this::getSafetyUser).collect(Collectors.toList());
     }
-
-
     /**
      *   根据标签搜索用户。(sql查询版)
      *   @Deprecated 过时
