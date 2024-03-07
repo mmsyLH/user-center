@@ -124,7 +124,7 @@
             <version>2.6.6</version>
         </dependency>
 
-        <!-- session-data-redis -->
+        <!-- session-data-redis 自动将session存储到redis -->
         <!-- https://mvnrepository.com/artifact/org.springframework.session/spring-session-data-redis -->
         <dependency>
             <groupId>org.springframework.session</groupId>

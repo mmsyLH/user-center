@@ -67,9 +67,11 @@ public interface UserService extends IService<User> {
      * @return int
      */
     int userLogout(HttpServletRequest request);
+
     /**
-     *   根据标签搜索用户。
-     * @param tagNameList  用户要搜索的标签
+     * 根据标签搜索用户。
+     *
+     * @param tagNameList 用户要搜索的标签
      * @return
      */
     List<User> searchUsersByTags(List<String> tagNameList);
@@ -81,4 +83,36 @@ public interface UserService extends IService<User> {
      * @return {@link List}<{@link User}>
      */
     List<User> searchUsersByTagBySQL(List<String> tagNameList);
+
+    /**
+     * 更新用户
+     *
+     * @param user      用户
+     * @param loginUser 登录用户
+     * @return int
+     */
+    int updateUser(User user, User loginUser);
+
+    /**
+     * 获取当前登录用户
+     *
+     * @return {@link User}
+     */
+    User getLoginUser(HttpServletRequest request);
+    /**
+     * 是否管理员
+     *
+     *
+     * @param request 请求
+     * @return boolean
+     */
+     boolean isAdmin(HttpServletRequest request);
+
+    /**
+     * 是否管理员
+     *
+     * @param user 用户
+     * @return boolean
+     */
+    boolean isAdmin(User user);
 }

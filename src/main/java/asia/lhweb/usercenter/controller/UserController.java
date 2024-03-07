@@ -36,6 +36,7 @@ import static asia.lhweb.usercenter.contant.UserConstant.*;
 public class UserController {
     @Resource
     private UserService userService;
+
     @ApiOperation("用户注册")
     @PostMapping("/register")
     public BaseResponse<Long> UserRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -46,20 +47,22 @@ public class UserController {
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String plantCode = userRegisterRequest.getPlantCode();
-        //是否为空
-        if (StringUtils.isAllBlank(userAccount, userPassword, checkPassword,plantCode)){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数为空");
+        // 是否为空
+        if (StringUtils.isAllBlank(userAccount, userPassword, checkPassword, plantCode)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         long res = userService.userRegister(userAccount, userPassword, checkPassword, plantCode);
-        return ResultUtils.success(res );
+        return ResultUtils.success(res);
     }
+
     @ApiOperation("用户退出登录")
     @PostMapping("/logout")
     public BaseResponse<Integer> userLogout(HttpServletRequest request) {
-        if (request==null) return null;
+        if (request == null) return null;
         int res = userService.userLogout(request);
-        return ResultUtils.success(res,USER_LOGOUT_SUCCESS);
+        return ResultUtils.success(res, USER_LOGOUT_SUCCESS);
     }
+
     @ApiOperation("用户登录")
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userRegisterRequest, HttpServletRequest request) {
@@ -68,12 +71,12 @@ public class UserController {
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
-        if (StringUtils.isAllBlank(userAccount, userPassword)){
+        if (StringUtils.isAllBlank(userAccount, userPassword)) {
             return null;
         }
 
         User user = userService.userLogin(userAccount, userPassword, request);
-        return ResultUtils.success(user,USER_LOGIN_SUCCESS);
+        return ResultUtils.success(user, USER_LOGIN_SUCCESS);
     }
 
     /**
@@ -84,17 +87,18 @@ public class UserController {
      */
     @ApiOperation("获取当前用户信息")
     @GetMapping("/current")
-    public BaseResponse<User> getCurrentUser(HttpServletRequest request){
-        User currentUser= (User) request.getSession().getAttribute(USER_LOGIN_STATE);
-        //如果没有登录过
+    // JSESSIONID=A272DF0F18E8AC3A7DAA35410AA45137;
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
+        User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        // 如果没有登录过
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
-        //如果在session中有这个登录凭证 就再从数据库中获取
-        Long userId=currentUser.getId();
+        // 如果在session中有这个登录凭证 就再从数据库中获取
+        Long userId = currentUser.getId();
         User user = userService.getById(userId);
         User safetyUser = userService.getSafetyUser(user);
-        return ResultUtils.success(safetyUser,"获取当前用户信息成功");
+        return ResultUtils.success(safetyUser, "获取当前用户信息成功");
     }
 
     /**
@@ -104,17 +108,18 @@ public class UserController {
      * @param request  请求
      * @return {@link BaseResponse}<{@link List}<{@link User}>>
      */
+
     @ApiOperation("搜索全部用户")
     @GetMapping("/search")
-    public BaseResponse<List<User>> searchUsers(String userName,HttpServletRequest request){
-        //鉴权 管理员可查询
-        if (!isAdmin(request)) {
-          throw new BusinessException(ErrorCode.NO_AUTH,"不是管理员");
+    public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
+        // 鉴权 管理员可查询
+        if (!userService.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "不是管理员");
         }
-        //todo 校验用户是否合法
-        //脱敏后返回
+        // todo 校验用户是否合法
+        // 脱敏后返回
         List<User> users = userService.searchUsers(userName);
-        return ResultUtils.success(users,"search成功");
+        return ResultUtils.success(users, "search成功");
     }
 
     /**
@@ -126,40 +131,54 @@ public class UserController {
      */
     @ApiOperation("删除用户")
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteUsers(@RequestBody long id, HttpServletRequest request){
-        if (!isAdmin(request)){
-            throw new BusinessException(ErrorCode.NO_AUTH,"不是管理员");
+    public BaseResponse<Boolean> deleteUsers(@RequestBody long id, HttpServletRequest request) {
+        if (!userService.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "不是管理员");
         }
-        if (id<=0){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"id不能小于0");
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "id不能小于0");
         }
         boolean res = userService.deleteUsers(id);
-        return ResultUtils.success(res,"删除成功");
+        return ResultUtils.success(res, "删除成功");
     }
 
     @ApiOperation("根据标签搜索用户")
     @GetMapping("/search/tags")
-    public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagsNameList){
-        //效验是否为空
-        if (CollectionUtils.isEmpty(tagsNameList)){
-            throw new BusinessException(ErrorCode.NULL_ERROR,"请求标签为空");
-        }
-        //脱敏后返回
-        List<User> users = userService.searchUsersByTags(tagsNameList);
-        return ResultUtils.success(users,"搜索用户列表成功");
-    }
     /**
-     * 是否管理员
-     *
-     *
-     * @param request 请求
-     * @return boolean
+     * @RequestParam(required = false) 表示 tagsNameList 这个参数是可选的，即可以在请求中省略不传。
+     * 如果请求中没有该参数，Spring MVC 将会把它设置为 null 或者空列表（取决于参数的类型），而不会抛出异常。
      */
-    private boolean isAdmin(HttpServletRequest request) {
-        //鉴权 管理员可删除
-        User user= (User) request.getSession().getAttribute(USER_LOGIN_STATE);
-        return user != null && user.getUserRole() == ADMIN_ROLE;
+    public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagsNameList) {
+        // 效验是否为空
+        if (CollectionUtils.isEmpty(tagsNameList)) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "请求标签为空");
+        }
+        // 脱敏后返回
+        List<User> users = userService.searchUsersByTags(tagsNameList);
+        return ResultUtils.success(users, "搜索用户列表成功");
     }
 
+
+    /**
+     * 更新用户
+     *
+     * @param user 用户
+     * @return {@link BaseResponse}<{@link Integer}>
+     */
+    @ApiOperation("修改用户")
+    @PostMapping("/update")// RequestBody是post请求才生效
+    public BaseResponse<Integer> updateUser(@RequestBody User user, HttpServletRequest request) {
+        // 1 效验参数是否为空
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        // 2 效验权限
+        User loginUser = userService.getLoginUser(request);
+
+
+        // 3 触发更新
+        int res = userService.updateUser(user, loginUser);
+        return ResultUtils.success(res);
+    }
 
 }
