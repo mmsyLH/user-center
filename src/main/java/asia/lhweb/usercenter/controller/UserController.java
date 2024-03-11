@@ -9,6 +9,7 @@ import asia.lhweb.usercenter.model.domain.User;
 import asia.lhweb.usercenter.model.request.UserLoginRequest;
 import asia.lhweb.usercenter.model.request.UserRegisterRequest;
 import asia.lhweb.usercenter.service.UserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static asia.lhweb.usercenter.contant.UserConstant.*;
 
@@ -147,8 +149,7 @@ public class UserController {
     /**
      * @RequestParam(required = false) 表示 tagsNameList 这个参数是可选的，即可以在请求中省略不传。
      * 如果请求中没有该参数，Spring MVC 将会把它设置为 null 或者空列表（取决于参数的类型），而不会抛出异常。
-     */
-    public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagsNameList) {
+     */ public BaseResponse<List<User>> searchUsersByTags(@RequestParam(required = false) List<String> tagsNameList) {
         // 效验是否为空
         if (CollectionUtils.isEmpty(tagsNameList)) {
             throw new BusinessException(ErrorCode.NULL_ERROR, "请求标签为空");
@@ -158,6 +159,23 @@ public class UserController {
         return ResultUtils.success(users, "搜索用户列表成功");
     }
 
+
+    @ApiOperation("获取主页的推荐伙伴")
+    @GetMapping("/recommend")
+    /**
+     * 获取推荐的朋友
+     *
+     * @return {@link BaseResponse}<{@link List}<{@link User}>>
+     */
+    public BaseResponse<List<User>> recommendFriends(HttpServletRequest request) {
+        // 1 判断是否登录？   如果登录的话 就推荐与自己相似的伙伴 如果没登录就推荐一些大众的伙伴
+        // 版本1 获取全部伙伴
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        List<User> userList = userService.list(queryWrapper);
+        List<User> safeUserList= userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        // todo 版本2 根据小算法获取推荐的伙伴
+        return ResultUtils.success(safeUserList);
+    }
 
     /**
      * 更新用户

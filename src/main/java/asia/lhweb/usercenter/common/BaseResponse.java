@@ -5,10 +5,12 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
+ * 基反应
  * 通用返回类
  *
  * @param <T>
  * @author yupi
+ * @date 2024/03/11
  */
 @Data
 public class BaseResponse<T> implements Serializable {
