@@ -2,6 +2,7 @@ package asia.lhweb.usercenter.service;
 
 import asia.lhweb.usercenter.mapper.UserMapper;
 import asia.lhweb.usercenter.model.domain.User;
+import org.ehcache.core.spi.service.ExecutionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -9,7 +10,9 @@ import org.springframework.util.StopWatch;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.*;
 
 /**
  * @author :罗汉
@@ -20,40 +23,57 @@ public class InsertUserTest {
     @Resource
     private UserMapper userMapper;
     @Resource
-    // private UserService userService;//批量插入
+    private UserService userService;// 批量插入
+
+    //新建线程池
+    private ExecutorService executorService = new ThreadPoolExecutor(16, 1000, 10000, TimeUnit.MINUTES, new ArrayBlockingQueue<>(10000));
 
     /**
-     * 插入1000万用户
      */
     @Test
     // @Scheduled(initialDelay = 5000,fixedRate  = Long.MAX_VALUE )//执行单次任务 5秒后执行一次，
     public void doInsertUser() {
-        StopWatch stopWatch = new StopWatch();//统计时间的工具类 spring提供的
+        StopWatch stopWatch = new StopWatch();// 统计时间的工具类 spring提供的
+        System.out.println();
         stopWatch.start();
-        final int INSERT_NUM = 1000000;
         Random random = new Random();
-        ArrayList<User> arrayList = new ArrayList<>();
-        for (int i = 1; i < INSERT_NUM; i++) {
-            User user = new User();
-            user.setUsername("测试用户" + i);
-            user.setUserAccount("testLuoHan" + i);
-            user.setAvatarUrl("https://lhwaimai.oss-cn-beijing.aliyuncs.com/logo/logo.jpg");
-            user.setGender(random.nextInt(2)); // 0代表男，1代表女
-            user.setUserPassword("https://lhwaimai.oss-cn-beijing.aliyuncs.com/logo/logo.jpg");
-            user.setPhone(generateRandomPhoneNumber());
-            user.setEmail("email" + i + "@example.com");
-            user.setUserStatus(0);
-            user.setUserRole(0);
-            user.setPlantCode("2203840110");
-            user.setTags(generateRandomTags());
-            // user.setProfile("个人简介");
-            // arrayList.add(user);
-            userMapper.insert(user);
+        List<User> arrayList = new CopyOnWriteArrayList<>();
+        // 分十组插入
+        int iSize=20;
+        int j = 0;
+        int batchSize = 15000;
+        List<CompletableFuture<Void>> futureList = new ArrayList<>();
+        for (int i = 1; i < iSize; i++) {
+            while (true) {
+                j++;
+                User user = new User();
+                user.setUsername("测试用户" + j);
+                user.setUserAccount("testLuoHan" + j);
+                user.setAvatarUrl("https://lhwaimai.oss-cn-beijing.aliyuncs.com/logo/logo.jpg");
+                user.setGender(random.nextInt(2)); // 0代表男，1代表女
+                user.setUserPassword("https://lhwaimai.oss-cn-beijing.aliyuncs.com/logo/logo.jpg");
+                user.setPhone(generateRandomPhoneNumber());
+                user.setEmail("email" + j + "@example.com");
+                user.setUserStatus(0);
+                user.setUserRole(0);
+                user.setPlantCode("2203840110");
+                user.setTags(generateRandomTags());
+                arrayList.add(user);
+                if (j % batchSize == 0) {
+                    System.out.println("第" + i + "次插入");
+                    break;
+                }
+            }
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                System.out.println("当前线程名：" + Thread.currentThread().getName());
+                userService.saveBatch(arrayList, batchSize);
+            },executorService);
+            futureList.add(future);
         }
-        // userService.saveBatch(arrayList,100);
+        CompletableFuture.allOf(futureList.toArray(new CompletableFuture[]{})).join();// join阻塞一下 全部执行完才会往下执行
         stopWatch.stop();
         long totalTimeMillis = stopWatch.getTotalTimeMillis();
-        System.out.println("测试插入"+INSERT_NUM+"条数据所耗时的毫秒数："+totalTimeMillis);
+        System.out.println("测试插入" + batchSize * iSize + "条数据所耗时的毫秒数：" + totalTimeMillis);
     }
 
     // 生成随机的手机号码

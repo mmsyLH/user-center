@@ -10,10 +10,14 @@ import asia.lhweb.usercenter.model.request.UserLoginRequest;
 import asia.lhweb.usercenter.model.request.UserRegisterRequest;
 import asia.lhweb.usercenter.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,13 +36,15 @@ import static asia.lhweb.usercenter.contant.UserConstant.*;
  * @date 2023/11/13
  */
 @Slf4j
-@RestController// 返回类型都是json restful风格的api
+@RestController// 返回类型都是json restful风格的api 2个注解的结合 @Controller + @ResponseBody
 @RequestMapping("/user")
 @Api(tags = "用户相关接口")
 public class UserController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private RedisTemplate<String,Object> redisTemplate;
     @ApiOperation("用户注册")
     @PostMapping("/register")
     public BaseResponse<Long> UserRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -167,14 +173,33 @@ public class UserController {
      *
      * @return {@link BaseResponse}<{@link List}<{@link User}>>
      */
-    public BaseResponse<List<User>> recommendFriends(HttpServletRequest request) {
+    public BaseResponse<Page<User>> recommendFriends(long pageNo,long pageSize,HttpServletRequest request) {
+        //获取当前用户
+        // User loginUser = userService.getLoginUser(request);
+        //如果有缓存 直接读缓存
+        // String redisKey=String.format("friend:user:recommend:%s",loginUser.getId());
+        String redisKey=String.format("friend:user:recommend:%s",2);
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        Page<User> userPage= (Page<User>)valueOperations.get(redisKey);
+        if(userPage!=null){
+            return ResultUtils.success(userPage);
+        }
+        //否则查询数据库
+        String key = "recommendFriends:" + pageNo + ":" + pageSize;
+
         // 1 判断是否登录？   如果登录的话 就推荐与自己相似的伙伴 如果没登录就推荐一些大众的伙伴
         // 版本1 获取全部伙伴
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        List<User> userList = userService.list(queryWrapper);
-        List<User> safeUserList= userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        userPage = userService.page(new Page<>(pageNo,pageSize),queryWrapper);
+        try{
+            valueOperations.set(redisKey,userPage,10000);
+        }catch (Exception e){
+            log.error("redisKey ERR",e);
+        }
+
+        // List<User> safeUserList= userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
         // todo 版本2 根据小算法获取推荐的伙伴
-        return ResultUtils.success(safeUserList);
+        return ResultUtils.success(userPage);
     }
 
     /**

@@ -52,7 +52,7 @@ public class SwaggerConfig {
                 )
                 .build()
                 .apiInfo(apiInfo())//设置个人信息
-                .pathMapping("/api")//设置请求前缀
+                .pathMapping("/friend")//设置请求前缀
                 ;
     }
 

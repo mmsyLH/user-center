@@ -29,7 +29,7 @@ spring:
 server: # 服务器配置部分的开始
   port: 8080 # 指定了服务器监听的端口号为8080，表示服务器会在8080端口上接受来自客户端的请求
   servl`et: # Servlet相关的配置
-    context-path: /api # 指定了应用的上下文路径为/api，这意味着所有的请求都需要加上/api前缀来访问应用中的资源
+    context-path: /friend # 指定了应用的上下文路径为/api，这意味着所有的请求都需要加上/api前缀来访问应用中的资源
     session: # Session相关的配置
       cookie: # Cookie配置
         domain: localhost # 指定了Cookie的域  不设置默认种植的地址就是 前段的地址是5173 后端的地址是8080
