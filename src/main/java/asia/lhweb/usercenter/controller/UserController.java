@@ -12,6 +12,7 @@ import asia.lhweb.usercenter.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.gson.Gson;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +21,14 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static asia.lhweb.usercenter.contant.UserConstant.*;
@@ -42,6 +46,9 @@ import static asia.lhweb.usercenter.contant.UserConstant.*;
 public class UserController {
     @Resource
     private UserService userService;
+
+    // @Resource
+    // private RedisTemplate redisTemplate;
 
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
@@ -97,7 +104,9 @@ public class UserController {
     @GetMapping("/current")
     // JSESSIONID=A272DF0F18E8AC3A7DAA35410AA45137;
     public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
-        User currentUser = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        HttpSession session = request.getSession();
+        log.info("sessionId"+session.getId());
+        User currentUser = (User) session.getAttribute(USER_LOGIN_STATE);
         // 如果没有登录过
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
@@ -180,19 +189,22 @@ public class UserController {
         // String redisKey=String.format("friend:user:recommend:%s",loginUser.getId());
         String redisKey=String.format("friend:user:recommend:%s",2);
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        Page<User> userPage= (Page<User>)valueOperations.get(redisKey);
+        String userJson= (String) valueOperations.get(redisKey);
+        Gson gson = new Gson();
+        Page<User> userPage = null;
+         userPage = gson.fromJson(userJson, Page.class);
         if(userPage!=null){
             return ResultUtils.success(userPage);
         }
         //否则查询数据库
-        String key = "recommendFriends:" + pageNo + ":" + pageSize;
-
         // 1 判断是否登录？   如果登录的话 就推荐与自己相似的伙伴 如果没登录就推荐一些大众的伙伴
         // 版本1 获取全部伙伴
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         userPage = userService.page(new Page<>(pageNo,pageSize),queryWrapper);
+
+         userJson = gson.toJson(userPage);
         try{
-            valueOperations.set(redisKey,userPage,10000);
+            valueOperations.set(redisKey,userJson,1, TimeUnit.DAYS);
         }catch (Exception e){
             log.error("redisKey ERR",e);
         }

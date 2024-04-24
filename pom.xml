@@ -27,12 +27,12 @@
             <version>2.2.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
+        <!--<dependency>-->
+        <!--    <groupId>org.springframework.boot</groupId>-->
+        <!--    <artifactId>spring-boot-devtools</artifactId>-->
+        <!--    <scope>runtime</scope>-->
+        <!--    <optional>true</optional>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>mysql</groupId>
@@ -132,6 +132,12 @@
             <version>2.6.3</version>
         </dependency>
 
+        <!-- 解决分布式锁的库 redisson-->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.13.6</version>
+        </dependency>
 
     </dependencies>
 
