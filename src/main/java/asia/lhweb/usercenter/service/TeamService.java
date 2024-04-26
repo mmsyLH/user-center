@@ -4,6 +4,7 @@ import asia.lhweb.usercenter.model.domain.Team;
 import asia.lhweb.usercenter.model.domain.User;
 import asia.lhweb.usercenter.model.dto.TeamDTO;
 import asia.lhweb.usercenter.model.dto.TeamJoinDTO;
+import asia.lhweb.usercenter.model.dto.TeamQuitDTO;
 import asia.lhweb.usercenter.model.dto.TeamUpdateDTO;
 import asia.lhweb.usercenter.model.vo.TeamUserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -50,4 +51,22 @@ public interface TeamService extends IService<Team> {
      * @return {@link Boolean}
      */
     Boolean joinTeam(TeamJoinDTO teamJoinDTO, HttpServletRequest request);
+
+    /**
+     * 退出团队
+     *
+     * @param teamQuitDTO 团队退出
+     * @param loginUser   登录用户
+     * @return boolean
+     */
+    boolean quitTeam(TeamQuitDTO teamQuitDTO, User loginUser);
+
+    /**
+     * 删除团队
+     *
+     * @param id        id
+     * @param loginUser 登录用户
+     * @return boolean
+     */
+    boolean deleteTeam(Long id, User loginUser);
 }

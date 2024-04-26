@@ -7,10 +7,7 @@ import asia.lhweb.usercenter.common.ResultUtils;
 import asia.lhweb.usercenter.exception.BusinessException;
 import asia.lhweb.usercenter.model.domain.Team;
 import asia.lhweb.usercenter.model.domain.User;
-import asia.lhweb.usercenter.model.dto.TeamAddDTO;
-import asia.lhweb.usercenter.model.dto.TeamDTO;
-import asia.lhweb.usercenter.model.dto.TeamJoinDTO;
-import asia.lhweb.usercenter.model.dto.TeamUpdateDTO;
+import asia.lhweb.usercenter.model.dto.*;
 import asia.lhweb.usercenter.model.vo.TeamUserVO;
 import asia.lhweb.usercenter.service.TeamService;
 import asia.lhweb.usercenter.service.UserService;
@@ -107,24 +104,24 @@ public class TeamController {
         return ResultUtils.success(true);
     }
 
-    /**
-     * 删除队伍
-     *
-     * @param id id
-     * @return {@link BaseResponse}<{@link Boolean}>
-     */
-    @ApiOperation("删除队伍")
-    @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(@RequestParam("id") Long id) {
-        if (id == null || id <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        boolean remove = teamService.removeById(id);
-        if (!remove) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除失败");
-        }
-        return ResultUtils.success(true);
-    }
+    // /**
+    //  * 删除队伍
+    //  *
+    //  * @param id id
+    //  * @return {@link BaseResponse}<{@link Boolean}>
+    //  */
+    // @ApiOperation("删除队伍")
+    // @PostMapping("/delete")
+    // public BaseResponse<Boolean> deleteTeam(@RequestParam("id") Long id) {
+    //     if (id == null || id <= 0) {
+    //         throw new BusinessException(ErrorCode.PARAMS_ERROR);
+    //     }
+    //     boolean remove = teamService.removeById(id);
+    //     if (!remove) {
+    //         throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除失败");
+    //     }
+    //     return ResultUtils.success(true);
+    // }
 
     /**
      * 查询队伍集合
@@ -197,8 +194,48 @@ public class TeamController {
         }
         Boolean res = teamService.joinTeam(teamJoinDTO, request);
         return ResultUtils.success(res, "加入成功");
+    }
 
+    /**
+     * 退出队伍
+     *
+     * @param teamQuitDTO 团队退出
+     * @param request     请求
+     * @return {@link BaseResponse}<{@link Boolean}>
+     */
+    @ApiOperation("退出队伍")
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuitDTO teamQuitDTO, HttpServletRequest request) {
+        // 1 效验参数是否为空
+        if (teamQuitDTO == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 2 效验权限
+        User loginUser = userService.getLoginUser(request);
 
+        // 3 触发退出队伍
+        boolean res = teamService.quitTeam(teamQuitDTO, loginUser);
+        return ResultUtils.success(res);
+    }
+
+    /**
+     * 解散队伍
+     *
+     * @param id      id
+     * @param request 请求
+     * @return {@link BaseResponse}<{@link Boolean}>
+     */
+    @ApiOperation("解散队伍")
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteTeam(@RequestBody Long id, HttpServletRequest request) {
+        // 1 效验参数是否为空
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 2 效验权限
+        User loginUser = userService.getLoginUser(request);
+        boolean res = teamService.deleteTeam(id, loginUser);
+        return ResultUtils.success(res);
     }
 
 }

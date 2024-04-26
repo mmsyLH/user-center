@@ -3,14 +3,13 @@ package asia.lhweb.usercenter.service.impl;
 import asia.lhweb.usercenter.common.ErrorCode;
 import asia.lhweb.usercenter.contant.UserConstant;
 import asia.lhweb.usercenter.exception.BusinessException;
+import asia.lhweb.usercenter.mapper.UserMapper;
+import asia.lhweb.usercenter.model.domain.User;
 import asia.lhweb.usercenter.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import asia.lhweb.usercenter.model.domain.User;
-import asia.lhweb.usercenter.mapper.UserMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.sun.corba.se.spi.ior.IdentifiableFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -373,6 +372,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean isAdmin(User user) {
         return user != null && user.getUserRole() == UserConstant.ADMIN_ROLE;
     }
+
+
 }
 
 

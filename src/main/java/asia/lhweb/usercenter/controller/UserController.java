@@ -2,7 +2,6 @@ package asia.lhweb.usercenter.controller;
 
 import asia.lhweb.usercenter.common.BaseResponse;
 import asia.lhweb.usercenter.common.ErrorCode;
-import asia.lhweb.usercenter.common.Result;
 import asia.lhweb.usercenter.common.ResultUtils;
 import asia.lhweb.usercenter.exception.BusinessException;
 import asia.lhweb.usercenter.model.domain.User;
@@ -10,7 +9,6 @@ import asia.lhweb.usercenter.model.request.UserLoginRequest;
 import asia.lhweb.usercenter.model.request.UserRegisterRequest;
 import asia.lhweb.usercenter.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import io.swagger.annotations.Api;
@@ -21,15 +19,12 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.spring.web.json.Json;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static asia.lhweb.usercenter.contant.UserConstant.*;
 
@@ -235,5 +230,7 @@ public class UserController {
         int res = userService.updateUser(user, loginUser);
         return ResultUtils.success(res);
     }
+
+
 
 }
